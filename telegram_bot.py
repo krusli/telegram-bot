@@ -138,6 +138,19 @@ class InlineResponse:
             return json.dumps(self.photo_list)
         return json.dumps(self.article_list)
 
+class Checked:
+    def __init__(self):
+        self.functions = []
+    def define(self):
+        def wrapper(func):
+            self.functions.append(func)
+            return func
+        return wrapper
+    def call_functions(self):
+        for function in self.functions:
+            function()
+checked = Checked()
+
 class Command:
     def __init__(self):
         self.commands = {}
@@ -257,6 +270,7 @@ class Telegram_Bot:
             last_update = 0
 
         while True:
+            checked.call_functions()
             try:
                 updates = json.loads(requests.get(self.url + 'getUpdates', dict(offset=last_update)).text)['result']
             except ConnectionError:
