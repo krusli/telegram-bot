@@ -103,6 +103,7 @@ class InlineQuery(Processable):
     def __init__(self, update):
         self.query_id = update['inline_query']['id']
         self.text = update['inline_query']['query']
+        self.sender = update['inline_query']['from']
         self.argument_count = self.get_argument_count()
 
     def get_command(self):
@@ -136,19 +137,6 @@ class InlineResponse:
         if self.photo_list:
             return json.dumps(self.photo_list)
         return json.dumps(self.article_list)
-
-class Checked:
-    def __init__(self):
-        self.functions = []
-    def define(self):
-        def wrapper(func):
-            self.functions.append(func)
-            return func
-        return wrapper
-    def call_functions(self):
-        for function in self.functions:
-            function()
-checked = Checked()
 
 class Command:
     def __init__(self):
@@ -269,7 +257,6 @@ class Telegram_Bot:
             last_update = 0
 
         while True:
-            checked.call_functions()
             try:
                 updates = json.loads(requests.get(self.url + 'getUpdates', dict(offset=last_update)).text)['result']
             except ConnectionError:
