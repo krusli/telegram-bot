@@ -18,10 +18,9 @@ send = bot.sender
 
 if __name__ == '__main__':
     bot.run()
-
 ```
 
-Replace your API token with the one you got from BotFather for your bot - if you don't have one - refer to Telegram Bot documentation](https://core.telegram.org/bots) to set up your bot first.
+Replace your API token with the one you got from BotFather for your bot - if you don't have one - refer to [Telegram Bot documentation](https://core.telegram.org/bots) to set up your bot first.
 
 ## Usage
 ### `send`
@@ -98,3 +97,6 @@ def check_reminders():
             x.append(reminder.to_json())
         json.dump(x, f)
 ```
+
+## Sample app: reminders
+A sample Telegram reminders bot is included (`Reminder.py`).
