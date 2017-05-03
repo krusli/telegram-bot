@@ -273,12 +273,8 @@ class Telegram_Bot:
             checked.call_functions()
             try:
                 updates = json.loads(requests.get(self.url + 'getUpdates', dict(offset=last_update)).text)['result']
-            except ConnectionError:
-                pass
-            except KeyError:
-                pass
-            except json.decoder.JSONDecodeError:
-                pass
+            except Exception as e:
+                print(e)
 
             for update in updates:
                 if last_update < update['update_id']:
