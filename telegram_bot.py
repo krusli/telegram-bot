@@ -273,8 +273,12 @@ class Telegram_Bot:
             checked.call_functions()
             try:
                 updates = json.loads(requests.get(self.url + 'getUpdates', dict(offset=last_update)).text)['result']
+            except KeyError as e:
+                updates = []    # fix UnboundLocalError
+                print("Unable to connect. Is the Bot API token valid?")
             except Exception as e:
-                print(e)
+                updates = []    # fix UnboundLocalError
+                print("Exception occurred", e)
 
             for update in updates:
                 if last_update < update['update_id']:

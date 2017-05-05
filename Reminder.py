@@ -7,7 +7,7 @@ bot = Telegram_Bot(token)
 send = bot.sender
 
 class Reminder:
-    datetime_format = "%d %B %Y, %H:%M"
+    datetime_format = "%d %B %Y %H:%M"
     def __init__(self, text, time_string, chat_id, sender):
         self.text = text
         self.sender = sender
@@ -59,10 +59,33 @@ except FileNotFoundError:
 @command.define('/addreminder')
 def add_reminder(message):
     if message.argument_count == 1:
-        reply = 'Usage: /addreminder tea 10 November 2016, 18:00 or /addreminder tea 18:00'
+        reply = 'Usage: /addreminder tea 10 November 2016 18:00 or /addreminder tea 18:00'
     else:
         text = message.get_arguments()[1]
-        time_string = ' '.join(message.get_arguments()[2:])
+
+        # check if 10 November 2016, 18:00 or 18:00
+        # TODO: testing
+        if len(message.get_arguments()) > 5:
+            text = ' '.join(message.get_arguments()[1:-4])
+            reminder_date_time = message.get_arguments()[-4:]
+            time_string = ' '.join(reminder_date_time)
+            try:
+                # if not numerical, cannot ducktype to float
+                float(reminder_date_time[0])
+                float(reminder_date_time[2])
+
+                # check if has colon (time)
+                has_colon = False
+                for letter in reminder_date_time[3]:
+                    if letter == ':':
+                        has_colon = True
+                        break
+                if not has_colon:
+                    raise ValueError
+            except ValueError:
+                time_string = ' '.join(message.get_arguments()[2:])
+        else:
+            time_string = ' '.join(message.get_arguments()[2:])
 
         try:
             reminder = TodayReminder(text, time_string, message.chat_id, message.sender['username'])
@@ -74,7 +97,7 @@ def add_reminder(message):
                 reminders.append(reminder)
                 reply = 'Reminder successfully added.'
             except ValueError:
-                reply = 'Usage: /addreminder tea 10 November 2016, 18:00 or /addreminder tea 18:00'
+                reply = 'Usage: /addreminder tea 10 November 2016 18:00 or /addreminder tea 18:00'
     send.markdown_reply(message.chat_id, reply, message.message_id)
 
 @checked.define()
