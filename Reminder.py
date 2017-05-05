@@ -61,11 +61,12 @@ def add_reminder(message):
     if message.argument_count == 1:
         reply = 'Usage: /addreminder tea 10 November 2016 18:00 or /addreminder tea 18:00'
     else:
-        text = message.get_arguments()[1]
+        text = message.get_arguments()[:-1]
 
         # check if 10 November 2016, 18:00 or 18:00
         # TODO: testing
         if len(message.get_arguments()) > 5:
+            print("6 or more args")
             text = ' '.join(message.get_arguments()[1:-4])
             reminder_date_time = message.get_arguments()[-4:]
             time_string = ' '.join(reminder_date_time)
@@ -83,9 +84,13 @@ def add_reminder(message):
                 if not has_colon:
                     raise ValueError
             except ValueError:
-                time_string = ' '.join(message.get_arguments()[2:])
+                print("Conversion failed")
+                time_string = message.get_arguments()[-1]
         else:
-            time_string = ' '.join(message.get_arguments()[2:])
+            time_string = message.get_arguments()[-1]
+
+        # print('text', text)
+        # print('time_string', time_string)
 
         try:
             reminder = TodayReminder(text, time_string, message.chat_id, message.sender['username'])
