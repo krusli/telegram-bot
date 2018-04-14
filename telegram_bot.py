@@ -1,4 +1,4 @@
-import json, requests
+import json, requests, traceback
 from collections import defaultdict
 
 bot_data_filename = 'bot_data.json'
@@ -13,35 +13,45 @@ def download_to_tempfile(url, filename='tempfile.jpg'):
 class Send:
     def __init__(self, token):
         self.url = 'https://api.telegram.org/bot%s/' % token
+
     def message(self, chat_id, message_text, reply_markup=None):
         if reply_markup:
             requests.get(self.url+'sendMessage', params=dict(chat_id=chat_id, text=message_text, reply_markup=reply_markup))
         else:
             requests.get(self.url+'sendMessage', params=dict(chat_id=chat_id, text=message_text))
+
     def message_reply(self, chat_id, message_text, message_id, reply_markup=None):
         if reply_markup:
             requests.get(self.url+'sendMessage', params=dict(chat_id=chat_id, text=message_text, reply_to_message_id=message_id, reply_markup=reply_markup))
         else:
             requests.get(self.url+'sendMessage', params=dict(chat_id=chat_id, text=message_text, reply_to_message_id=message_id))
+
     def markdown(self, chat_id, message_text, reply_markup=None):
         if reply_markup:
             requests.get(self.url+'sendMessage', params=dict(chat_id=chat_id, text=message_text, parse_mode='Markdown', \
                 reply_markup=reply_markup))
         else:
             requests.get(self.url+'sendMessage', params=dict(chat_id=chat_id, text=message_text, parse_mode='Markdown'))
+
     def markdown_reply(self, chat_id, message_text, message_id):
         requests.get(self.url+'sendMessage', params=dict(chat_id=chat_id, text=message_text, reply_to_message_id=message_id, \
             parse_mode='Markdown'))
+
     def action(self, chat_id, bot_action):
         requests.get(self.url+'sendChatAction', params=dict(chat_id=chat_id, action=bot_action))
+
     def send_photo(self, chat_id, filename, disable_notification=False):
         self.action(chat_id, 'upload_photo')
+        # TODO catch FileNotFoundError
         requests.post(self.url+'sendPhoto', data=dict(chat_id=chat_id, disable_notification=disable_notification), files=dict(photo=open(filename, 'rb')))
+
     def send_document(self, chat_id, filename):
         self.action(chat_id, 'upload_document')
         requests.post(self.url+'sendDocument', data=dict(chat_id=chat_id), files=dict(document=open(filename, 'rb')))
+
     def inline_response(self, query_id, answer):
         requests.get(self.url+'answerInlineQuery', params=dict(inline_query_id=query_id, results=answer))
+
     def answer_callback_query(self, callback_query_id, message_text=None, show_alert=False):
         params = dict(callback_query_id=callback_query_id)
         if message_text:
@@ -49,6 +59,7 @@ class Send:
         if show_alert:
             params['show_alert'] = True
         requests.get(self.url+'answerCallbackQuery', params=params)
+
     def edit_message(self, text, chat_id=None, message_id=None, inline_message_id=None, parse_mode=None, reply_markup=None):
         # print(text, chat_id, message_id, inline_message_id, parse_mode, reply_markup)
         if chat_id or message_id or inline_message_id:
@@ -61,6 +72,7 @@ class Send:
             if reply_markup: params['reply_markup'] = reply_markup
             # print(params)
             requests.get(self.url+'editMessageText', params=params)
+
     def edit_message_markup(self, chat_id=None, message_id=None, inline_message_id=None, reply_markup=None):
         if chat_id or message_id or inline_message_id:
             if chat_id and message_id:
@@ -281,7 +293,9 @@ class Telegram_Bot:
             #     print("Exception occurred", e)
             except Exception as e:
                 # TODO logging
-                print(e)
+                # print(e)
+                traceback.print_exc()
+                print('Error: check if your token is valid')  # TODO throw exception if KeyError
                 continue
 
             for update in updates:
