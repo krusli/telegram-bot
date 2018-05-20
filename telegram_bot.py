@@ -163,6 +163,9 @@ class Checked:
             function()
 checked = Checked()
 
+class CommandNotDefinedError(ValueError):
+    pass
+
 class Command:
     def __init__(self):
         self.commands = {}
@@ -180,7 +183,7 @@ class Command:
         if func:
             return func
         else:
-            raise ValueError('Command "{}" has not been defined'.format(command))
+            raise CommandNotDefinedError('Command "{}" has not been defined'.format(command))
 
 command = Command()
 
@@ -234,7 +237,7 @@ class InlineKeyboard:
         self.keyboard_button_list = [[]]
     def add_keyboard_button(self, text, callback_data=None, next_row=False, switch_inline_query=None):
         if next_row:
-            keyboard_button_list.append([])     # insert new row
+            self.keyboard_button_list.append([])     # insert new row
 
         keyboard_button = {}
         keyboard_button['text'] = text
@@ -259,8 +262,8 @@ class ChosenInlineResult:
     def __init__(self, update):
         self.result_id = update['chosen_inline_result']['result_id']
         self.sender = update['chosen_inline_result']['from']
-        self.location = update['chosen_inline_result'].get(location)
-        self.inline_message_id = update['chosen_inline_result'].get(inline_message_id)
+        self.location = update['chosen_inline_result'].get('location')  # TODO
+        self.inline_message_id = update['chosen_inline_result'].get('inline_message_id')  # TODO
         self.query = update['chosen_inline_result']['query']
 
 class Telegram_Bot:
@@ -293,7 +296,7 @@ class Telegram_Bot:
             #     print("Exception occurred", e)
             except Exception as e:
                 # TODO logging
-                # print(e)
+                print(e)
                 traceback.print_exc()
                 print('Error: check if your token is valid')  # TODO throw exception if KeyError
                 continue
@@ -309,8 +312,8 @@ class Telegram_Bot:
                         try:
                             function = command.get(message.get_command())
                             function(message)   # Message object for processing
-                        except ValueError:   # no command in message
-                            pass
+                        except CommandNotDefinedError as e:   # no command in message   # TODO
+                            traceback.print_exc()
 
                     if 'inline_query' in update.keys():
                         inline_query = InlineQuery(update)
@@ -328,8 +331,8 @@ class Telegram_Bot:
                         try:
                             function = inline_callback.get(callback_query.data)
                             function(callback_query)
-                        except ValueError:  # undefined command
-                            pass
+                        except CommandNotDefinedError as e:  # undefined command
+                            traceback.print_exc()
 
                     """
                     if 'chosen_inline_result' in update.keys():
